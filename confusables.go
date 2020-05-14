@@ -1,8 +1,5 @@
 package confusables
 
-// This file has a bunch of commented code because I was converting the "confusables" Python library
-// and then later realized that I wanted to keep things simple and only do some basic normalization.
-
 import (
 	"fmt"
 	"io/ioutil"
@@ -10,6 +7,8 @@ import (
 	"path"
 	"strconv"
 	"strings"
+
+	"golang.org/x/text/unicode/norm"
 )
 
 const (
@@ -20,7 +19,8 @@ var (
 	confusableMap map[rune]string
 )
 
-// Parse the "confusables.txt" file provided by The Unicode Consortium and turn it into a map.
+// When this package is initialized, parse the "confusables.txt" file provided by The Unicode
+// Consortium and turn it into a map.
 func init() {
 	confusablesPath := path.Join("assets", ConfusablesFileName)
 	if _, err := os.Stat(confusablesPath); os.IsNotExist(err) {
@@ -108,155 +108,25 @@ func init() {
 			os.Exit(1)
 		}
 		confusableMap[char1] = char2
-
-		/*
-			if utf8.RuneCountInString(char1) == 1 {
-				char1Inverted := invertCase(char1)
-				if char1Inverted != char1 {
-					unicodeConfusableMap[char1] = append(unicodeConfusableMap[char1], char1Inverted)
-					unicodeConfusableMap[char1Inverted] = append(unicodeConfusableMap[char1], char1)
-				}
-			}
-
-			if utf8.RuneCountInString(char2) == 1 {
-				char2Inverted := invertCase(char2)
-				if char2Inverted != char2 {
-					unicodeConfusableMap[char2] = append(unicodeConfusableMap[char1], char2Inverted)
-					unicodeConfusableMap[char2Inverted] = append(unicodeConfusableMap[char1], char2)
-				}
-			}
-		*/
 	}
-
-	/*
-		for _, letter := range "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz" {
-			char := string(letter)
-			accentedCars := getAccentedCharacters(char)
-			for _, accentedChar := range accentedCars {
-				unicodeConfusableMap[char] = append(unicodeConfusableMap[char], accentedChar)
-				unicodeConfusableMap[accentedChar] = append(unicodeConfusableMap[accentedChar], char)
-			}
-		}
-
-		confusableMap := make(map[string][]string)
-		for char := range unicodeConfusableMap {
-			charGroup := getConfusableChars(char, unicodeConfusableMap, 0)
-			sort.Strings(charGroup)
-			confusableMap[char] = charGroup
-		}
-
-		var jsonString []byte
-		if v, err := json.Marshal(confusableMap); err != nil {
-			fmt.Println("Failed to marshal the JSON:", err)
-			os.Exit(1)
-		} else {
-			jsonString = v
-		}
-
-		confusableMappingPath := path.Join("assets", ConfusableMappingFileName)
-		if err := ioutil.WriteFile(confusableMappingPath, jsonString, 0644); err != nil {
-			fmt.Println("Failed to write to \""+confusableMappingPath+"\":", err)
-			os.Exit(1)
-		}
-	*/
 }
-
-/*
-func invertCase(s string) string {
-	if isUpper(s) {
-		return strings.ToLower(s)
-	}
-	return strings.ToUpper(s)
-}
-
-// From: https://stackoverflow.com/questions/59293525
-func isUpper(s string) bool {
-	for _, r := range s {
-		if !unicode.IsUpper(r) && unicode.IsLetter(r) {
-			return false
-		}
-	}
-	return true
-}
-
-// getAccentedCharacters goes through every Unicode character and uses NFD (Normalization Form
-// Canonical Decomposition) see if it is an accented version of the base character.
-func getAccentedCharacters(char string) []string {
-	accentedCharacters := make([]string, 0)
-	for i := 0; i <= unicode.MaxRune; i++ {
-		u := string(i)
-		if u != char && asciify(u) == char {
-			accentedCharacters = append(accentedCharacters, u)
-		}
-	}
-	return accentedCharacters
-}
-
-// asciify turns a Unicode character in an ASCII one.
-// It will return an empty string if there is no ASCII representation for the character.
-// For example, "ȧ" will be converted to "a".
-// For example, "Ƞ" will be converted to "".
-func asciify(char string) string {
-	// Normalize the character using NFD (Normalization Form Canonical Decomposition). NFD must be
-	// used over NFC because we need to separate the base character from any accents.
-	// https://en.wikipedia.org/wiki/Unicode_equivalence
-	char = norm.NFD.String(char)
-
-	// Strip out any runes (code points) that are non-printable ASCII characters.
-	// https://www.ascii-code.com/
-	// We explicitly avoid using the more-intuitive "for _, codePoint := range char {"
-	// because that performs unnecessary rune conversions.
-	// https://stackoverflow.com/questions/53069040/checking-a-string-contains-only-ascii-characters
-	asciiChars := make([]byte, 0)
-	for i := 0; i < len(char); i++ {
-		codePoint := char[i]
-		if codePoint >= 32 && codePoint <= 126 {
-			asciiChars = append(asciiChars, codePoint)
-		}
-	}
-	return string(asciiChars)
-}
-
-func getConfusableChars(
-	character string,
-	unicodeConfusableMap map[string][]string,
-	depth int,
-) []string {
-	mappedChars := unicodeConfusableMap[character]
-
-	group := []string{character}
-	if depth <= MaxSimilarityDepth {
-		for _, mappedChar := range mappedChars {
-			mappedChars2 := getConfusableChars(mappedChar, unicodeConfusableMap, depth+1)
-			for _, mappedChar2 := range mappedChars2 {
-				if !stringInSlice(mappedChar2, group) {
-					group = append(group, mappedChar2)
-				}
-			}
-		}
-	}
-	return group
-}
-
-func stringInSlice(a string, slice []string) bool {
-	for _, b := range slice {
-		if b == a {
-			return true
-		}
-	}
-	return false
-}
-*/
 
 // Normalize returns a copy of a string with common Unicode homoglyphs replaced with their
 // more-standard versions.
 func Normalize(s string) string {
-	normalizedString := s
+	// First, normalize the string with NFD.
+	// https://blog.golang.org/normalization
+	// We need to use NFD instead of NFC because we need to separate accents from the base
+	// character. Otherwise, we wouldn't be able to find the match in "confusables.txt". For an
+	// example, of this, see "TestNormalizeAccentAndNFD()".
+	normalizedString := norm.NFD.String(s)
+
+	// Second, replace homoglyphs (as reported by "confusables.txt")
 	for _, r := range s {
 		if replacement, ok := confusableMap[r]; ok {
-			normalizedString = strings.Replace(normalizedString, string(r), replacement, -1)
+			normalizedString = strings.ReplaceAll(normalizedString, string(r), replacement)
 		}
 	}
 
-	return s
+	return normalizedString
 }
