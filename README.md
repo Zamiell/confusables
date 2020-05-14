@@ -22,10 +22,10 @@ import (
 )
 
 func main() {
-	username1 := "Αlice" // Uses a Greek letter A
-	username2 := "Alice" // Uses all ASCII characters, like you would naively expect
-	fmt.Println("No normalization - Usernames are equal:", username1 == username2) // Prints "false"
+	username1 := "Alice" // Uses all ASCII characters, like you would naively expect
+	username2 := "Αlice" // Uses a Greek letter A
 
+	fmt.Println("No normalization - Usernames are equal:", username1 == username2) // Prints "false"
 	username1 = confusables.Normalize(username1)
 	fmt.Println("After normalization - Usernames are equal:", username1 == username2) // Prints "true"
 }
