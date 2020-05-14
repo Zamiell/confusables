@@ -1,0 +1,24 @@
+linters:
+  enable-all: true
+  disable:
+    # This library uses globals, not sure how to refactor them away
+    - gochecknoglobals
+    # This library uses an init function, not sure how to refactor this away
+    - gochecknoinit
+    # We use some globals
+    - gochecknoglobals
+    # goconst complains about common strings
+    - goconst
+
+linters-settings:
+  govet:
+    # Checking for shadowed variables is experimental and disabled by default
+    check-shadowing: true
+
+  lll:
+    line-length: 120
+    tab-width: 4
+
+  whitespace:
+    # Enforce newlines (or comments) after every multi-line if statement
+    multi-if: true

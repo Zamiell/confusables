@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/pkg/errors"
 	"golang.org/x/text/unicode/norm"
 )
 
@@ -20,27 +21,36 @@ var (
 )
 
 // When this package is initialized, parse the "confusables.txt" file provided by The Unicode
-// Consortium and turn it into a map.
+// Consortium and turn it into a map. Keep it in memory for subsequent use.
 func init() {
+	if v, err := makeConfusableMap(); err != nil {
+		fmt.Println(err)
+		os.Exit(1)
+	} else {
+		confusableMap = v
+	}
+}
+
+func makeConfusableMap() (map[rune]string, error) {
 	confusablesPath := path.Join("assets", ConfusablesFileName)
 	if _, err := os.Stat(confusablesPath); os.IsNotExist(err) {
-		fmt.Println("\"" + confusablesPath + "\" does not exist.")
-		os.Exit(1)
+		msg := "\"" + confusablesPath + "\" does not exist."
+		return nil, errors.Wrap(err, msg)
 	} else if err != nil {
-		fmt.Println("Failed to check to see if \""+confusablesPath+"\" exists:", err)
-		os.Exit(1)
+		msg := "Failed to check to see if \"" + confusablesPath + "\" exists:"
+		return nil, errors.Wrap(err, msg)
 	}
 
 	var confusableLines []string
 	if fileContents, err := ioutil.ReadFile(confusablesPath); err != nil {
-		fmt.Println("Failed to read the \""+confusablesPath+"\" file:", err)
-		os.Exit(1)
+		msg := "Failed to read the \"" + confusablesPath + "\" file:"
+		return nil, errors.Wrap(err, msg)
 	} else {
 		confusablesString := string(fileContents)
 		confusableLines = strings.Split(confusablesString, "\n")
 	}
 
-	confusableMap = make(map[rune]string)
+	newConfusableMap := make(map[rune]string)
 
 	for i, line := range confusableLines {
 		// Ignore the first line, which should just be a comment of "# confusables.txt". This line
@@ -73,9 +83,9 @@ func init() {
 		char1String := "0x" + strings.TrimSpace(mapping[0])
 		var char1Int int64
 		if v, err := strconv.ParseInt(char1String, 0, 64); err != nil {
-			fmt.Println("Failed to convert \""+char1String+"\" to an integer on line "+
-				strconv.Itoa(lineNumber)+":", err)
-			os.Exit(1)
+			msg := "Failed to convert \"" + char1String + "\" to an integer on line " +
+				strconv.Itoa(lineNumber) + ":"
+			return nil, errors.Wrap(err, msg)
 		} else {
 			char1Int = v
 		}
@@ -90,9 +100,9 @@ func init() {
 			hexStr = "0x" + hexStr
 			var charInt int64
 			if v, err := strconv.ParseInt(hexStr, 0, 64); err != nil {
-				fmt.Println("Failed to convert \""+hexStr+"\" to an integer on line "+
-					strconv.Itoa(lineNumber)+":", err)
-				os.Exit(1)
+				msg := "Failed to convert \"" + hexStr + "\" to an integer on line " +
+					strconv.Itoa(lineNumber) + ":"
+				return nil, errors.Wrap(err, msg)
 			} else {
 				charInt = v
 			}
@@ -101,14 +111,16 @@ func init() {
 		char2 := string(char2Array)
 
 		// See: https://staticcheck.io/docs/checks#S1036
-		if _, ok := confusableMap[char1]; ok {
-			fmt.Println("Failed to parse \"" + ConfusablesFileName + "\". There is a duplicate " +
-				"rune on line " + strconv.Itoa(lineNumber) + ":")
-			fmt.Println(line)
-			os.Exit(1)
+		if _, ok := newConfusableMap[char1]; ok {
+			msg := "Failed to parse \"" + ConfusablesFileName + "\". There is a duplicate rune " +
+				"on line " + strconv.Itoa(lineNumber) + "."
+			err := errors.New(msg)
+			return nil, errors.Wrap(err, msg)
 		}
-		confusableMap[char1] = char2
+		newConfusableMap[char1] = char2
 	}
+
+	return newConfusableMap, nil
 }
 
 // Normalize returns a copy of a string with common Unicode homoglyphs replaced with their
