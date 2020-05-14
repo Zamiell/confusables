@@ -1,4 +1,4 @@
-package confusables
+package confusables_test
 
 // The following website is useful for inspecting the contents of Unicode strings:
 // https://apps.timwhitlock.info/unicode/inspect
@@ -9,13 +9,9 @@ package confusables
 import (
 	"errors"
 	"testing"
-)
 
-func TestMakeConfusableMap(t *testing.T) {
-	if _, err := makeConfusableMap(); err != nil {
-		t.Error(err)
-	}
-}
+	"github.com/Zamiell/confusables"
+)
 
 func TestNormalizeBasic(t *testing.T) {
 	username1 := "Alice" // Uses all ASCII characters, like you would naively expect ("A" is 0x41)
@@ -72,11 +68,10 @@ func TestNormalizeAccentAndNFD(t *testing.T) {
 
 func NormalizeTestEqual(s1 string, s2 string) error {
 	if s1 == s2 {
-		return errors.New("\"" + s1 + "\" and \"" + s2 + "\" are equal before normalization; " +
-			"this should never happen")
+		return errors.New("\"" + s1 + "\" and \"" + s2 + "\" are equal before normalization")
 	}
 
-	if Normalize(s1) != Normalize(s2) {
+	if confusables.Normalize(s1) != confusables.Normalize(s2) {
 		return errors.New("normalization did not make \"" + s1 + "\" and \"" + s2 + "\" equal")
 	}
 
@@ -85,11 +80,10 @@ func NormalizeTestEqual(s1 string, s2 string) error {
 
 func NormalizeTestNotEqual(s1 string, s2 string) error {
 	if s1 == s2 {
-		return errors.New("\"" + s1 + "\" and \"" + s2 + "\" are equal before normalization; " +
-			"this should never happen")
+		return errors.New("\"" + s1 + "\" and \"" + s2 + "\" are equal before normalization")
 	}
 
-	if Normalize(s1) == Normalize(s2) {
+	if confusables.Normalize(s1) == confusables.Normalize(s2) {
 		return errors.New("normalization made \"" + s1 + "\" and \"" + s2 + "\" equal")
 	}
 

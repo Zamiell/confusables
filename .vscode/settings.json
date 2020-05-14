@@ -1,6 +1,6 @@
 // These are Visual Studio Code settings that should apply to this particular repository
 {
-  // This project uses a line length of 100, which matches the Airbnb JavaScript style guide
+  // This project uses a line length of 100.
   "editor.rulers": [100],
 
   // Linux line endings are used in this project

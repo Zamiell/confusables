@@ -6,7 +6,7 @@ Confusables is a library written in [Golang](https://golang.org/) to normalize [
 
 Normalizing homoglyphs is useful for ensuring username uniqueness, finding malicious fake website names, detecting attempts to get past a profanity filter, and more.
 
-In addition to swapping out homoglyphs, this library also uses [norm](https://godoc.org/golang.org/x/text/unicode/norm) under the hood to normalize strings using [NFD](https://en.wikipedia.org/wiki/Unicode_equivalence, which fixes the problem of there being several Unicode ways to represent the same string. See [this Go blog post](https://blog.golang.org/normalization) for more details.
+In addition to swapping out homoglyphs, this library also uses [norm](https://godoc.org/golang.org/x/text/unicode/norm) under the hood to normalize strings using [NFD](https://en.wikipedia.org/wiki/Unicode_equivalence), which fixes the problem of there being several Unicode ways to represent the same string. See [this Go blog post](https://blog.golang.org/normalization) for more details.
 
 See [below](#the-unicode-problem-with-uniqueness) on *why* you should use this library to normalize Unicode strings. This library is not a complete solution for avoiding homoglyphs attacks; it is merely an effort to fix the "low hanging fruit". Pull requests are welcome.
 

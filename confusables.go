@@ -123,14 +123,15 @@ func makeConfusableMap() (map[rune]string, error) {
 	return newConfusableMap, nil
 }
 
-// Normalize returns a copy of a string with common Unicode homoglyphs replaced with their
-// more-standard versions.
+// Normalize returns a copy of a string that is:
+// 1) Normalized with Normalization Form Canonical Decomposition (NFD).
+// 2) Has common Unicode homoglyphs replaced with their more-standard versions.
 func Normalize(s string) string {
 	// First, normalize the string with NFD.
 	// https://blog.golang.org/normalization
 	// We need to use NFD instead of NFC because we need to separate accents from the base
 	// character. Otherwise, we wouldn't be able to find the match in "confusables.txt". For an
-	// example, of this, see "TestNormalizeAccentAndNFD()".
+	// example of this, see "TestNormalizeAccentAndNFD()".
 	normalizedString := norm.NFD.String(s)
 
 	// Second, replace homoglyphs (as reported by "confusables.txt")
