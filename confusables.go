@@ -7,6 +7,7 @@ import (
 	"path"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/pkg/errors"
 	"golang.org/x/text/unicode/norm"
@@ -90,6 +91,13 @@ func makeConfusableMap() (map[rune]string, error) {
 			char1Int = v
 		}
 		char1 := rune(char1Int)
+
+		// We ignore confusing ASCII characters
+		// For example, "confusables.txt" contains the following line:
+		// 006D ;	0072 006E ;	MA	# ( m → rn ) LATIN SMALL LETTER M → LATIN SMALL LETTER R, LATIN SMALL LETTER N	#
+		if char1 <= unicode.MaxASCII {
+			continue
+		}
 
 		// Get the second character (e.g. the character that the confusing character looks like).
 		// This is represented as one or more hex strings (e.g. "2A600", "0028 0072 006E 0029").
