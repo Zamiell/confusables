@@ -123,23 +123,37 @@ func makeConfusableMap() (map[rune]string, error) {
 	return newConfusableMap, nil
 }
 
+func ContainsHomoglyphs(s string) bool {
+	// See the comment in the "Normalize()" function below.
+	s = norm.NFD.String(s)
+
+	for _, r := range s {
+		if _, ok := confusableMap[r]; ok {
+			return true
+		}
+	}
+
+	return false
+}
+
 // Normalize returns a copy of a string that is:
 // 1) Normalized with Normalization Form Canonical Decomposition (NFD).
 // 2) Has common Unicode homoglyphs replaced with their more-standard versions.
 func Normalize(s string) string {
 	// First, normalize the string with NFD.
 	// https://blog.golang.org/normalization
-	// We need to use NFD instead of NFC because we need to separate accents from the base
-	// character. Otherwise, we wouldn't be able to find the match in "confusables.txt". For an
-	// example of this, see "TestNormalizeAccentAndNFD()".
-	normalizedString := norm.NFD.String(s)
+	// We need to use NFD instead of NFC because we need to separate diacritics (accents) from the
+	// base character. Otherwise, we wouldn't be able to find the match in "confusables.txt". For an
+	// example of this, see "TestNormalizeDiacriticAndNFD()".
+	s = norm.NFD.String(s)
 
 	// Second, replace homoglyphs (as reported by "confusables.txt")
+	s2 := s // Make a copy before iterating over it
 	for _, r := range s {
 		if replacement, ok := confusableMap[r]; ok {
-			normalizedString = strings.ReplaceAll(normalizedString, string(r), replacement)
+			s2 = strings.ReplaceAll(s2, string(r), replacement)
 		}
 	}
 
-	return normalizedString
+	return s2
 }

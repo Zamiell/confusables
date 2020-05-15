@@ -7,6 +7,8 @@ linters:
     - gochecknoinits
     # goconst complains about common strings.
     - goconst
+    # gofmt is not needed because we are running goimports (which is a superset of gofmt)
+    - gofmt
     # goerr113 complains about creating new static errors.
     - goerr113
     # funlen complains about long functions.

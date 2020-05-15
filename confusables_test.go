@@ -3,7 +3,7 @@ package confusables_test
 // The following website is useful for inspecting the contents of Unicode strings:
 // https://apps.timwhitlock.info/unicode/inspect
 
-// The following website is useful for creating characters with accents:
+// The following website is useful for creating characters with diacritics (accents):
 // https://onlineunicodetools.com/add-combining-characters
 
 import (
@@ -13,7 +13,21 @@ import (
 	"github.com/Zamiell/confusables"
 )
 
-func TestNormalizeBasic(t *testing.T) {
+func TestContainsHomoglyphsBasic(t *testing.T) {
+	username := "Alice" // Uses all ASCII characters, like you would naively expect ("A" is 0x41)
+	if confusables.ContainsHomoglyphs(username) {
+		t.Error("username of \"" + username + "\" should not contain homoglyphs")
+	}
+}
+
+func TestContainsHomoglyphsGreek(t *testing.T) {
+	username := "Αlice" // Uses a Greek letter A (0x391)
+	if !confusables.ContainsHomoglyphs(username) {
+		t.Error("username of \"" + username + "\" should contain homoglyphs")
+	}
+}
+
+func TestNormalizeGreek(t *testing.T) {
 	username1 := "Alice" // Uses all ASCII characters, like you would naively expect ("A" is 0x41)
 	username2 := "Αlice" // Uses a Greek letter A (0x391)
 
@@ -22,17 +36,18 @@ func TestNormalizeBasic(t *testing.T) {
 	}
 }
 
-func TestNormalizeAccentAndNoAccent(t *testing.T) {
+func TestNormalizeDiacriticAndNoDiacritic(t *testing.T) {
 	username1 := "Alice" // Uses all ASCII characters, like you would naively expect ("e" is 0x65)
 	username2 := "Alicé" // Uses an e-acute (0xe9)
 
-	// Accented characters do not count as being confusing, at least according to "confusables.txt".
+	// Characters with diacritics (accents) do not count as being confusing,
+	// at least according to "confusables.txt".
 	if err := NormalizeTestNotEqual(username1, username2); err != nil {
 		t.Error(err)
 	}
 }
 
-func TestNormalizeAccent(t *testing.T) {
+func TestNormalizeDiacritic(t *testing.T) {
 	username1 := "Àlice" // Uses a normal A (0x41) with a grave (0x300)
 	username2 := "Ὰlice" // Uses a Greek letter A (0x391) with a grave (0x300)
 
@@ -52,8 +67,8 @@ func TestNormalizeNFD(t *testing.T) {
 	}
 }
 
-// TestNormalizeAccentAndNFD is a combination of TestNormalizeAccent and TestNormalizeNFD.
-func TestNormalizeAccentAndNFD(t *testing.T) {
+// TestNormalizeDiacriticAndNFD is a combination of TestNormalizeDiacritic and TestNormalizeNFD.
+func TestNormalizeDiacriticAndNFD(t *testing.T) {
 	username1 := "Alicé"  // Uses an e-acute (0xe9).
 	username2 := "Alicе́" // Uses a Cyrillic small letter e (0x435) followed by an acute accent (0x301).
 

@@ -25,6 +25,9 @@ func main() {
 	username1 := "Alice" // Uses all ASCII characters, like you would naively expect ("A" is 0x41).
 	username2 := "Αlice" // Uses a Greek letter A (0x391).
 
+	fmt.Println("Username 1 contains homoglyphs:", confusables.ContainsHomoglyphs(username1)) // Prints "false"
+	fmt.Println("Username 2 contains homoglyphs:", confusables.ContainsHomoglyphs(username2)) // Prints "true"
+
 	fmt.Println("No normalization - Usernames are equal:", username1 == username2) // Prints "false"
 	username1 = confusables.Normalize(username1)
 	fmt.Println("After normalization - Usernames are equal:", username1 == username2) // Prints "true"
