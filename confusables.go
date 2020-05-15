@@ -136,6 +136,19 @@ func ContainsHomoglyphs(s string) bool {
 	return false
 }
 
+func IndexOfFirstHomoglyph(s string) int {
+	// See the comment in the "Normalize()" function below.
+	s = norm.NFD.String(s)
+
+	for i, r := range s {
+		if _, ok := confusableMap[r]; ok {
+			return i
+		}
+	}
+
+	return -1
+}
+
 // Normalize returns a copy of a string that is:
 // 1) Normalized with Normalization Form Canonical Decomposition (NFD).
 // 2) Has common Unicode homoglyphs replaced with their more-standard versions.
